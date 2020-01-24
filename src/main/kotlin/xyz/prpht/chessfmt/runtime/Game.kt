@@ -6,6 +6,12 @@ class Game {
         private set
     var enPassant: Board.Square? = null
         private set
+    var moveId = 0 // zero means not started!
+        private set
+
+    fun start() {
+        moveId = 1
+    }
 
     fun applyRegMove(from: Board.Square, to: Board.Square, valid: RegMoveValidator.Result) {
         applyPieceShift(from, to, valid)
@@ -28,6 +34,7 @@ class Game {
     }
 
     private fun applyPieceShift(from: Board.Square, to: Board.Square, valid: RegMoveValidator.Result) {
+        check(moveId > 0) { "Game must be started before making moves" }
         enPassant = null
         val piece = checkNotNull(board[from]) { "Empty 'from' square" }
         board[from] = null
@@ -38,5 +45,7 @@ class Game {
 
     private fun afterMove() {
         side = !side
+        if (side == Side.White)
+            ++moveId
     }
 }

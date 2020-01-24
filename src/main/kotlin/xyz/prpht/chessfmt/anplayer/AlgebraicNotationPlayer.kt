@@ -2,10 +2,51 @@ package xyz.prpht.chessfmt.anplayer
 
 import xyz.prpht.chessfmt.runtime.*
 
-class AlgebraicNotationPlayer {
+class AlgebraicNotationPlayer(
+        private val historyAN: String,
+        private val onPosition: (Game) -> Unit = {}
+) {
     private val game = Game()
 
-    fun makeMove(moveAN: String) {
+    fun play() {
+        check(game.moveId == 0) { "Attempt to restart" }
+        val moveANs = splitToMoveANs()
+
+        onPosition(game)
+        game.start()
+        moveANs.forEach {
+            makeMove(it)
+            onPosition(game)
+        }
+    }
+
+    private fun splitToMoveANs(): List<String> {
+        val blocks = historyAN.split(" ")
+        var inComment = false
+        return blocks.filter {
+            if (it.isEmpty())
+                return@filter false
+
+            if (it[0] == AlgebraicNotation.openCommentSymbol) {
+                check(!inComment) { "Nested comments" }
+                inComment = true
+            }
+
+            if (inComment) {
+                if (it.last() == AlgebraicNotation.closeCommentSymbol)
+                    inComment = false
+
+                return@filter false
+            }
+
+            if (it.matches(AlgebraicNotation.moveIdRegex))
+                return@filter false
+
+            true
+        }
+    }
+
+    private fun makeMove(moveAN: String) {
         if (moveAN.startsWith(AlgebraicNotation.longCastling)) {
             game.applyLongCastling()
             return

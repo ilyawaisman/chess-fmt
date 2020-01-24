@@ -26,4 +26,15 @@ object AlgebraicNotation {
 
     val takeSymbols = setOf('x', ':')
     const val promotionSymbol = '='
+
+    val openCommentSymbol = '{'
+    val closeCommentSymbol = '}'
+
+    val matchOutcomes = listOf(
+            "1-0",
+            "0-1",
+            "1/2-1/2"
+    )
+
+    val moveIdRegex = """\d+\.""".toRegex()
 }
