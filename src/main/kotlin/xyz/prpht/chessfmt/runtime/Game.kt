@@ -1,31 +1,33 @@
 package xyz.prpht.chessfmt.runtime
 
 class Game {
-    private val board: Board = InitBoard.create()
-    private var move: Side = Side.White
-    private var enPassant: Board.Square? = null
+    val board: Board = InitBoard.create()
+    var side: Side = Side.White
+        private set
+    var enPassant: Board.Square? = null
+        private set
 
-    fun applyRegMove(from: Board.Square, to: Board.Square, valid: RegMoveValidator.Result.Valid) {
+    fun applyRegMove(from: Board.Square, to: Board.Square, valid: RegMoveValidator.Result) {
         applyPieceShift(from, to, valid)
         afterMove()
     }
 
     fun applyShortCastling() {
-        applyCastling(Castling[move, Castling.Kind.Short])
+        applyCastling(Castling[side, Castling.Kind.Short])
         afterMove()
     }
 
     fun applyLongCastling() {
-        applyCastling(Castling[move, Castling.Kind.Long])
+        applyCastling(Castling[side, Castling.Kind.Long])
         afterMove()
     }
 
     private fun applyCastling(castling: Castling) {
-        applyPieceShift(castling.kingFrom, castling.kingTo, RegMoveValidator.Result.simpleValid)
-        applyPieceShift(castling.rookFrom, castling.rookTo, RegMoveValidator.Result.simpleValid)
+        applyPieceShift(castling.kingFrom, castling.kingTo, RegMoveValidator.Result.simple)
+        applyPieceShift(castling.rookFrom, castling.rookTo, RegMoveValidator.Result.simple)
     }
 
-    private fun applyPieceShift(from: Board.Square, to: Board.Square, valid: RegMoveValidator.Result.Valid) {
+    private fun applyPieceShift(from: Board.Square, to: Board.Square, valid: RegMoveValidator.Result) {
         enPassant = null
         val piece = checkNotNull(board[from]) { "Empty 'from' square" }
         board[from] = null
@@ -35,6 +37,6 @@ class Game {
     }
 
     private fun afterMove() {
-        move = !move
+        side = !side
     }
 }

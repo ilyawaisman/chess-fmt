@@ -21,7 +21,7 @@ class RegMoveValidator private constructor(
                 to: Board.Square,
                 prevEnPassant: Board.Square?,
                 promotion: PieceKind?
-        ): Result {
+        ): Result? {
             check(to != from) { "'from' and 'to' squares coincide" }
             val piece = checkNotNull(board[from]) { "'from' square is empty" }
             check(promotion != PieceKind.Pawn) { "'promotion' is ${PieceKind.Pawn}" }
@@ -40,9 +40,9 @@ class RegMoveValidator private constructor(
         )
     }
 
-    fun isValid(): Result {
+    fun isValid(): Result? {
         if (needPromote(piece, to) != (promotion != null))
-            return Result.Invalid
+            return null
 
         val victimSq =
                 if (to == prevEnPassant)
@@ -52,7 +52,7 @@ class RegMoveValidator private constructor(
 
         val victim = board[victimSq]
         if (victim?.side == piece.side)
-            return Result.Invalid
+            return null
 
         val isValid: Boolean = when (piece.kind) {
             PieceKind.Pawn -> isValidPawn()
@@ -64,9 +64,9 @@ class RegMoveValidator private constructor(
         }
 
         if (!isValid)
-            return Result.Invalid
+            return null
 
-        return Result.Valid(victimSq, enPassant)
+        return Result(victimSq, enPassant)
     }
 
     private fun isValidPawn(): Boolean {
@@ -126,14 +126,9 @@ class RegMoveValidator private constructor(
 
     private fun needPromote(piece: Piece, to: Board.Square) = piece.kind == PieceKind.Pawn && to.row == piece.side.lastRow
 
-    sealed class Result {
-        data class Valid(val victimSq: Board.Square?, val enPassant: Board.Square?) : Result()
-        object Invalid : Result()
-
-        fun isValid() = this != Invalid
-
+    data class Result(val victimSq: Board.Square?, val enPassant: Board.Square?) {
         companion object {
-            val simpleValid = Valid(null, null)
+            val simple = Result(null, null)
         }
     }
 
