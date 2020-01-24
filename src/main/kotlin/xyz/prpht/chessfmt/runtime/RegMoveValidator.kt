@@ -7,24 +7,25 @@ class RegMoveValidator private constructor(
         private val from: Board.Square,
         private val to: Board.Square,
         private val piece: Piece,
-        private val enPassant: Board.Square?,
+        private val prevEnPassant: Board.Square?,
         private val promotion: PieceKind?
 ) {
     private val vec = from..to
     private val vecAbs = Board.Vec(abs(vec.row), abs(vec.col))
+    private var enPassant: Board.Square? = null
 
     companion object {
         fun isValid(
                 board: Board,
                 from: Board.Square,
                 to: Board.Square,
-                enpassant: Board.Square?,
+                prevEnPassant: Board.Square?,
                 promotion: PieceKind?
         ): Result {
             check(to != from) { "'from' and 'to' squares coincide" }
             val piece = checkNotNull(board[from]) { "'from' square is empty" }
             check(promotion != PieceKind.Pawn) { "'promotion' is ${PieceKind.Pawn}" }
-            return RegMoveValidator(board, from, to, piece, enpassant, promotion).isValid()
+            return RegMoveValidator(board, from, to, piece, prevEnPassant, promotion).isValid()
         }
 
         private val allowedVecAbsPawn = listOf(
@@ -44,7 +45,7 @@ class RegMoveValidator private constructor(
             return Result.Invalid
 
         val victimSq =
-                if (to == enPassant)
+                if (to == prevEnPassant)
                     to.copy(row = to.row + piece.side.not().forw)
                 else
                     to
@@ -65,7 +66,7 @@ class RegMoveValidator private constructor(
         if (!isValid)
             return Result.Invalid
 
-        return Result.Valid(victimSq)
+        return Result.Valid(victimSq, enPassant)
     }
 
     private fun isValidPawn(): Boolean {
@@ -82,7 +83,13 @@ class RegMoveValidator private constructor(
             return true
 
         // vecAbs.row == 2
-        return board[from + vec.copy(row = vec.row / 2)] == null
+        val enPassant = from + vec.copy(row = vec.row / 2)
+        if (board[enPassant] == null) {
+            this.enPassant = enPassant
+            return true
+        }
+
+        return false
     }
 
     private fun isValidKnight() = vecAbs in allowedVecAbsKnight
@@ -120,10 +127,14 @@ class RegMoveValidator private constructor(
     private fun needPromote(piece: Piece, to: Board.Square) = piece.kind == PieceKind.Pawn && to.row == piece.side.lastRow
 
     sealed class Result {
-        data class Valid(val victimSq: Board.Square? = null) : Result()
+        data class Valid(val victimSq: Board.Square?, val enPassant: Board.Square?) : Result()
         object Invalid : Result()
 
         fun isValid() = this != Invalid
+
+        companion object {
+            val simpleValid = Valid(null, null)
+        }
     }
 
     private val Side.lastRow

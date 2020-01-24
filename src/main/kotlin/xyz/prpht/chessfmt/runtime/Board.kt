@@ -2,17 +2,22 @@ package xyz.prpht.chessfmt.runtime
 
 import kotlin.math.sign
 
-class Board {
-    private val storage = Array<Piece?>(dim * dim) { null }
+class Board private constructor(
+        private val storage: Array<Piece?>
+) {
+    constructor(): this(Array(dim * dim) { null })
 
     operator fun get(sq: Square) = storage[sq.id]
 
-    operator fun set(sq: Square, piece: Piece) {
+    operator fun set(sq: Square, piece: Piece?) {
         storage[sq.id] = piece
     }
 
+    fun copy() = Board(storage.clone())
+
     companion object {
         const val dim = 8
+        const val max = dim - 1
         private fun id(row: Int, col: Int) = row * dim + col
     }
 
