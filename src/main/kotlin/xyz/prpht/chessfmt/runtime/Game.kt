@@ -48,4 +48,6 @@ class Game {
         if (side == Side.White)
             ++moveId
     }
+
+    override fun toString() = "Next move #$moveId by $side\n$board"
 }

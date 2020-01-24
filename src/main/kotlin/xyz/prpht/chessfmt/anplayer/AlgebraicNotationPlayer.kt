@@ -71,7 +71,7 @@ class AlgebraicNotationPlayer(
     private fun deduceMove(piece: Piece, fromCol: Int?, fromRow: Int?, to: Board.Square, promotion: PieceKind?, moveAN: String): RegMove {
         fun validate(sq: Board.Square) =
                 game.board[sq].takeIf { it == piece }
-                        .let { RegMoveValidator.isValid(game.board, sq, to, game.enPassant, promotion) }
+                        .let { RegMoveValidator.isValid(game.board, game.side, sq, to, game.enPassant, promotion) }
                         ?.let { RegMove(sq, it) }
 
         val cands = when {
@@ -116,7 +116,7 @@ class AlgebraicNotationPlayer(
         val toRow = fromTo.last()
         val toCol = fromTo[fromTo.lastIndex - 1]
         check(AlgebraicNotation.isValidRow(toRow)) { "Unexpected last coord 'moveAN' = $moveAN, row expected, but was $toRow" }
-        check(AlgebraicNotation.isValidRow(toCol)) { "Unexpected pre-last coord 'moveAN' = $moveAN, col expected, but was $toCol" }
+        check(AlgebraicNotation.isValidCol(toCol)) { "Unexpected pre-last coord 'moveAN' = $moveAN, col expected, but was $toCol" }
         return Board.Square(AlgebraicNotation.row(toRow), AlgebraicNotation.col(toCol))
     }
 
@@ -125,10 +125,11 @@ class AlgebraicNotationPlayer(
         while (!eater.finished()) {
             val c = eater.peek()
             if (AlgebraicNotation.isValidCoord(c))
-                fromTo.add(c)
-            if (c !in AlgebraicNotation.takeSymbols)
+                fromTo.add(eater.bite())
+            else if (c in AlgebraicNotation.takeSymbols)
+                eater.bite()
+            else
                 break
-            eater.bite()
         }
 
         check(fromTo.size in 2..4) { "Unexpected count of coords in 'moveAN' = $moveAN (${fromTo.size} found)" }

@@ -8,8 +8,8 @@ data class Piece(
 
     companion object {
         private val symbols = listOf(
-                "♙♘♗♖♕♔",
-                "♟♞♝♜♛♚"
+                "PNBRQK",
+                "pnbrqk"
         )
     }
 }

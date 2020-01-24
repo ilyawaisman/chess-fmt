@@ -24,7 +24,7 @@ object InitBoard {
     private val board = Board()
 
     init {
-        (0..Board.dim).forEach { col ->
+        Board.range.forEach { col ->
             board[Board.Square(initRow(Side.White), col)] = Piece(Side.White, firstRow[col])
             board[Board.Square(initRow(Side.White) + 1, col)] = Piece(Side.White, PieceKind.Pawn)
             board[Board.Square(initRow(Side.Black) - 1, col)] = Piece(Side.Black, PieceKind.Pawn)

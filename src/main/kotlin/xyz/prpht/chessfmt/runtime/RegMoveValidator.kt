@@ -17,14 +17,15 @@ class RegMoveValidator private constructor(
     companion object {
         fun isValid(
                 board: Board,
+                side: Side,
                 from: Board.Square,
                 to: Board.Square,
                 prevEnPassant: Board.Square?,
                 promotion: PieceKind?
         ): Result? {
-            check(to != from) { "'from' and 'to' squares coincide" }
-            val piece = checkNotNull(board[from]) { "'from' square is empty" }
-            check(promotion != PieceKind.Pawn) { "'promotion' is ${PieceKind.Pawn}" }
+            if (to == from) return null
+            val piece = board[from] ?: return null
+            if (piece.side != side) return null
             return RegMoveValidator(board, from, to, piece, prevEnPassant, promotion).isValid()
         }
 
